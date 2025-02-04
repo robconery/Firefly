@@ -1,7 +1,7 @@
 const assert = require("assert");
-const Firefly = require("../lib/firefly"); // Adjust the path as necessary
+const Admin = require("../lib/admin"); // Adjust the path as necessary
 
-class Bug extends Firefly {}
+class Bug extends Admin {}
 
 describe("Firefly", () => {
   let bug = new Bug({ id: 1, name: "Steve", type: "moth" });
