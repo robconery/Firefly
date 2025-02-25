@@ -3,20 +3,20 @@ const Admin = require("../lib/admin"); // Adjust the path as necessary
 
 class Bug extends Admin {}
 
-describe("Firefly", () => {
+describe("Firefly ActiveRecord API", () => {
   let bug = new Bug({ id: 1, name: "Steve", type: "moth" });
 
-  it("should instantiate", () => {
+  it("instantiates", () => {
     assert.ok(bug);
   });
 
-  it("should create a document", async () => {
+  it("creates a document", async () => {
     bug = await bug.save();
     assert.ok(bug.id);
     assert.strictEqual(bug.name, "Steve");
   });
 
-  it("should create nested document", async () => {
+  it("creates nested document", async () => {
     let deepBug = new Bug({
       id: 1,
       name: "Steve",
@@ -34,41 +34,41 @@ describe("Firefly", () => {
     await badBug.save();
   });
 
-  it("should find a document by ID", async () => {
+  it("finds a document by ID using get", async () => {
     const result = await Bug.get(bug.id);
     assert.strictEqual(result.name, "Steve");
   });
 
-  it("returns null if not found", async () => {
+  it("returns null if not found with get", async () => {
     const notFound = await Bug.get(999);
     assert.strictEqual(notFound, null);
   });
 
-  it("should find a single document by criteria", async () => {
+  it("finds a single document by criteria using find", async () => {
     const found = await Bug.find({ name: "Steve" });
     assert.strictEqual(found.name, "Steve");
   });
 
-  it("should return null if criteria not matched", async () => {
+  it("returns null if criteria not matched using find", async () => {
     const found = await Bug.find({ name: "Ray" });
     assert.strictEqual(found, null);
   });
-  it("should find a multiple documents by criteria using filter", async () => {
+  it("finds multiple documents by criteria using filter", async () => {
     const found = await Bug.filter({ name: "Steve" });
     assert.strictEqual(found.length, 1);
   });
 
-  it("should return empty array if filter criteria not matched", async () => {
+  it("returns empty array if filter criteria not matched", async () => {
     const found = await Bug.filter({ name: "Ray" });
     assert.strictEqual(found.length, 0);
   });
 
-  it("should find all documents", async () => {
+  it("finds all documents using all", async () => {
     const results = await Bug.all();
     assert.ok(results.length > 0);
   });
 
-  it("should delete a document and return true", async () => {
+  it("deletes a document and returns true using delete", async () => {
     const deleted = await bug.delete();
     assert(deleted);
   });
