@@ -28,7 +28,7 @@ This project uses JavaScript with the following styles:
  - Do not export a class directly, use module method instead to create the instance you need (aka "factory")
 
 ## Testing
-All tests will be run with Jest. In addition:
+All tests will be run with Mocha. In addition:
 
  - One assertion per test, _no_ exceptions
  - Tests should arrange the test data in `before` blocks
