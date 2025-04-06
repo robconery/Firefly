@@ -6,6 +6,8 @@
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 
+![The Build](https://github.com/robred4/Firefly/actions/workflows/build.yml/badge.svg)
+
 
 > 🌟 An elegant Active Record implementation for Firebase's Firestore
 
