@@ -26,10 +26,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-      env:
-        FIREBASE_TYPE: service_account
-        FIREBASE_PROJECT_ID: project-8588976765518720764
-        FIREBASE_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
+    env:
+      FIREBASE_TYPE: service_account
+      FIREBASE_PROJECT_ID: project-8588976765518720764
+      FIREBASE_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
