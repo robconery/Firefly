@@ -33,4 +33,5 @@ jobs:
     env:
       FIREBASE_TYPE: service_account
       FIREBASE_PROJECT_ID: project-8588976765518720764
-      FIREBASE_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
