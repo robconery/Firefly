@@ -1,14 +1,19 @@
 # 🔥 Firefly - Firebase Firestore Active Record
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
-![The Build](https://github.com/robred4/Firefly/actions/workflows/build.yml/badge.svg)
+A lightweight, ActiveRecord-style ORM for Firebase Firestore that makes working with your data as easy as spreading wings! 🦋
 
-> 🌟 An elegant Active Record implementation for Firebase's Firestore - making database operations as simple as they should be!
+[![npm version](https://badge.fury.io/js/firefly.svg)](https://badge.fury.io/js/firefly)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-Firefly brings the familiar Active Record pattern to Firebase Firestore, giving you intuitive CRUD operations, powerful querying capabilities, and seamless data management. 
+## ✨ Features
 
-## 🚀 Quick Installation
+- 🎯 **ActiveRecord Pattern**: Familiar API for developers coming from Rails, Laravel, or similar frameworks
+- 🔥 **Firebase Firestore**: Powered by Google's scalable NoSQL database
+- 📝 **Simple Syntax**: Write less code, do more
+- 🚀 **Automatic Timestamps**: Created and updated timestamps handled automatically
+- 🔍 **Flexible Querying**: Multiple query methods for different use cases
+
+## 🛠 Installation
 
 ```bash
 npm install firefly
@@ -16,378 +21,282 @@ npm install firefly
 
 ## ⚙️ Setup & Configuration
 
-### 1. Firebase Project Setup 🏗️
+### 1. Firebase Project Setup
 
-First, you'll need Firebase Admin SDK credentials. Create a service account in your Firebase console and download the JSON key file.
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Generate a service account key:
+   - Go to Project Settings → Service Accounts
+   - Click "Generate New Private Key"
+   - Save the JSON file securely
 
-### 2. Environment Configuration 🔧
+### 2. Environment Configuration
 
-Create a `.env` file in your project root with your Firebase credentials:
+Create a `.env` file in your project root:
 
 ```env
 FIREBASE_TYPE=service_account
 FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=your-service-account@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY_ID=your-private-key-id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+YOUR PRIVATE KEY HERE
+-----END PRIVATE KEY-----"
+FIREBASE_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+FIREBASE_CLIENT_ID=your-client-id
+FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+FIREBASE_TOKEN_URI=https://accounts.google.com/o/oauth2/token
+FIREBASE_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
+FIREBASE_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/your-service-account@your-project.iam.gserviceaccount.com
 ```
 
-### 3. Basic Setup 🎯
+### 3. Basic Usage
 
 ```javascript
-// Import the Firefly base class
-const Firefly = require('firefly').Firefly;
+const Firefly = require('firefly');
 
 // Create your model by extending Firefly
-class User extends Firefly {
-  // Your model is ready to use! 🎉
-}
-
-// Or use the factory approach
-const { Firefly } = require('firefly');
-class Product extends Firefly {}
+class User extends Firefly {}
+class Post extends Firefly {}
 ```
 
-## 💾 Writing Data - Save, Create & Delete Operations
+## 🚀 Quick Start
 
-### Creating Records 📝
+### Creating (Writing) Data
 
 ```javascript
-// Method 1: Create and save manually
-const user = new User({
-  name: 'Alice Johnson',
-  email: 'alice@example.com',
-  age: 28
+const User = require('./lib/admin'); // Extend Firefly
+
+// Method 1: Create and save
+const user = new User({ 
+  name: "Alice", 
+  email: "alice@example.com",
+  role: "admin" 
 });
-await user.save(); // 💾 Saves to Firestore
-console.log(`User saved with ID: ${user.id}`); // Auto-generated ID
+await user.save();
 
-// Method 2: Create and save in one step
-const product = await Product.create({
-  name: 'Gaming Laptop',
-  price: 1299.99,
-  category: 'Electronics'
+// Method 2: Create directly
+const user2 = await User.create({
+  name: "Bob",
+  email: "bob@example.com", 
+  role: "user"
 });
-console.log('Product created! 🎮', product.id);
 
-// Method 3: Create with custom ID
-const customUser = new User({
-  id: 'user_12345',
-  name: 'Bob Smith',
-  email: 'bob@example.com'
+// Method 3: Save nested data
+const userWithPrefs = new User({
+  name: "Charlie",
+  email: "charlie@example.com",
+  preferences: {
+    theme: "dark",
+    notifications: true
+  },
+  tags: ["developer", "javascript"]
 });
-await customUser.save();
+await userWithPrefs.save();
 ```
 
-### Bulk Operations - Save Many 📦
-
-Perfect for importing data or batch operations:
+### Updating Data
 
 ```javascript
-const users = [
-  new User({ name: 'Charlie', email: 'charlie@example.com' }),
-  new User({ name: 'Diana', email: 'diana@example.com' }),
-  new User({ name: 'Eve', email: 'eve@example.com' })
-];
+// Method 1: Update instance
+const user = await User.get("user-id");
+user.email = "newemail@example.com";
+user.role = "moderator";
+await user.save();
 
-const savedUsers = await User.saveMany(users);
-console.log(`💫 Saved ${savedUsers.length} users!`);
+// Method 2: Static update
+await User.update("user-id", { 
+  email: "updated@example.com",
+  last_login: new Date().toISOString()
+});
 ```
 
-### Updating Records ✏️
+### Deleting Data
 
 ```javascript
-// Update individual fields
-await User.update('user_12345', { age: 29, lastLogin: new Date() });
+// Method 1: Delete instance
+const user = await User.get("user-id");
+await user.delete(); // Returns true
 
-// Or load, modify, and save
-const user = await User.get('user_12345');
-user.age = 30;
-user.status = 'premium';
-await user.save(); // 🔄 Updates existing record
+// Method 2: Static delete
+await User.delete("user-id");
+
+// Method 3: Delete multiple records
+const deletedCount = await User.deleteMany({ role: "inactive" });
+console.log(`Deleted ${deletedCount} users`);
 ```
 
-### Deleting Records 🗑️
+## 🔍 Query Methods
 
-```javascript
-// Delete by ID (static method)
-await User.delete('user_12345');
-console.log('User deleted! 👋');
-
-// Delete instance method
-const user = await User.get('user_12345');
-await user.delete();
-
-// Bulk delete by criteria
-const deletedCount = await User.deleteMany({ status: 'inactive' });
-console.log(`🗑️ Deleted ${deletedCount} inactive users`);
-```
-
-## 📖 Reading Data 
-
-### Basic Retrieval 🎯
+### Basic Retrieval
 
 ```javascript
 // Get by ID
-const user = await User.get('user_12345');
-if (user) {
-  console.log(`Found: ${user.name}`); // 🎉
-} else {
-  console.log('User not found 😢');
-}
+const user = await User.get("user-id");
+// Returns User instance or null
 
-// Check if record exists
-const exists = await User.exists('user_12345');
-console.log(`User exists: ${exists ? '✅' : '❌'}`);
+// Check if exists
+const exists = await User.exists("user-id");
+// Returns boolean
 
 // Get all records
 const allUsers = await User.all();
-console.log(`📊 Total users: ${allUsers.length}`);
+// Returns array of User instances
 ```
 
-### Single Record Queries 🔍
+### Finding Records
 
 ```javascript
-// Find first match by criteria
-const premiumUser = await User.find({ status: 'premium' });
-if (premiumUser) {
-  console.log(`Premium user: ${premiumUser.name} ⭐`);
-}
+// Find single record by criteria
+const admin = await User.find({ role: "admin" });
+// Returns first matching User instance or null
 
-// Find by email
-const userByEmail = await User.find({ email: 'alice@example.com' });
+// Find multiple records by criteria
+const admins = await User.filter({ role: "admin" });
+// Returns array of User instances
+
+// Advanced where queries
+const activeUsers = await User.where("status", "==", "active");
+// Returns array matching the criteria
+
+const recentUsers = await User.where("created_at", ">", "2024-01-01");
+// Supports ==, !=, <, <=, >, >=, array-contains, in, not-in
 ```
 
-### Multiple Record Queries 📋
+### Advanced Querying
 
 ```javascript
-// Filter records by criteria
-const activeUsers = await User.filter({ status: 'active' });
-console.log(`👥 Active users: ${activeUsers.length}`);
+// Order by field
+const usersByName = await User.whereKeyExists("name");
+// Orders by the specified field (ascending by default)
 
-// Filter by category
-const electronics = await Product.filter({ category: 'Electronics' });
+// Save multiple records
+const users = [
+  new User({ name: "User1", email: "user1@example.com" }),
+  new User({ name: "User2", email: "user2@example.com" })
+];
+const savedUsers = await User.saveMany(users);
 ```
 
-### Advanced Querying 🔬
+### Query Operators
+
+Firefly supports all Firestore query operators:
+
+- `==` - Equal to
+- `!=` - Not equal to  
+- `<` - Less than
+- `<=` - Less than or equal to
+- `>` - Greater than
+- `>=` - Greater than or equal to
+- `array-contains` - Array contains value
+- `in` - Value in array
+- `not-in` - Value not in array
 
 ```javascript
-// Where queries with operators
-const expensiveProducts = await Product.where('price', '>', 1000);
-console.log(`💰 Found ${expensiveProducts.length} expensive products`);
-
-// Available operators: '==', '!=', '<', '<=', '>', '>=', 'array-contains', 'in', 'not-in'
-const recentUsers = await User.where('created_at', '>=', new Date('2024-01-01'));
-const specificUsers = await User.where('id', 'in', ['user1', 'user2', 'user3']);
+// Examples of different operators
+const posts = await Post.where("likes", ">", 100);
+const draftPosts = await Post.where("status", "in", ["draft", "pending"]);
+const taggedPosts = await Post.where("tags", "array-contains", "javascript");
 ```
 
-### Ordering & Sorting 📊
+## 📋 Complete API Reference
+
+### Static Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `create(data)` | Create and save new record | Promise\<Instance\> |
+| `get(id)` | Find record by ID | Promise\<Instance\|null\> |
+| `find(criteria)` | Find single record by criteria | Promise\<Instance\|null\> |
+| `filter(criteria)` | Find multiple records by criteria | Promise\<Array\<Instance\>\> |
+| `all()` | Get all records | Promise\<Array\<Instance\>\> |
+| `where(key, op, val)` | Query with operator | Promise\<Array\<Instance\>\> |
+| `whereKeyExists(key)` | Order by key | Promise\<Array\<Instance\>\> |
+| `exists(id)` | Check if record exists | Promise\<boolean\> |
+| `update(id, data)` | Update record by ID | Promise\<Object\> |
+| `delete(id)` | Delete record by ID | Promise\<boolean\> |
+| `deleteMany(criteria)` | Delete multiple records | Promise\<number\> |
+| `saveMany(instances)` | Save multiple instances | Promise\<Array\<Instance\>\> |
+
+### Instance Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `save()` | Save current instance | Promise\<Instance\> |
+| `delete()` | Delete current instance | Promise\<boolean\> |
+| `collection()` | Get collection name | string |
+
+## 🏗 Collection Naming
+
+Firefly automatically converts your class names to collection names using Rails-style conventions:
+
+- `User` → `users`
+- `BlogPost` → `blog_posts`  
+- `UserPreference` → `user_preferences`
+
+## 📚 Examples
+
+### Blog System
 
 ```javascript
-// Order by field (ascending by default)
-const usersByAge = await User.whereKeyExists('age'); // Returns users ordered by age
-const newestProducts = await Product.orderBy('created_at', 'desc', 100); // Limit 100
-
-// Custom ordering
-const topProducts = await Product.orderBy('rating', 'desc', 10);
-console.log('🏆 Top 10 products by rating');
-```
-
-### Complex Queries 🧩
-
-```javascript
-// Multiple conditions (AND logic)
-const query = await User.whereAnd([
-  { key: 'age', op: '>=', val: 18 },
-  { key: 'status', op: '==', val: 'active' },
-  { key: 'country', op: '==', val: 'USA' }
-]);
-console.log(`🎯 Found ${query.length} matching users`);
-```
-
-## 🏗️ Working with Models
-
-### Model Definition 📋
-
-```javascript
-class BlogPost extends Firefly {
-  // Models automatically get:
-  // - id (auto-generated or custom)
-  // - created_at (UTC timestamp)
-  // - timestamp (milliseconds)
-  
-  // Add custom methods
-  isPublished() {
-    return this.status === 'published';
-  }
-  
-  publish() {
-    this.status = 'published';
-    this.published_at = new Date();
-    return this.save(); // 🚀
-  }
-}
-
-// Usage
-const post = new BlogPost({
-  title: 'My First Post',
-  content: 'Hello, world!',
-  status: 'draft'
-});
-
-await post.save();
-console.log('📝 Blog post saved!');
-
-// Later...
-await post.publish();
-console.log('📰 Post published!');
-```
-
-### Nested Data Support 🌳
-
-Firefly handles complex nested objects seamlessly:
-
-```javascript
-const user = new User({
-  name: 'Sarah',
-  profile: {
-    bio: 'Software developer',
-    skills: ['JavaScript', 'Python', 'React'],
-    social: {
-      twitter: '@sarah_dev',
-      github: 'sarah-codes'
-    }
-  },
-  preferences: {
-    theme: 'dark',
-    notifications: true
-  }
-});
-
-await user.save(); // 💾 All nested data preserved!
-```
-
-### Collection Naming 📁
-
-Firefly automatically converts your class names to appropriate collection names:
-
-```javascript
-class User extends Firefly {} // → 'users' collection
-class BlogPost extends Firefly {} // → 'blog_posts' collection  
-class ProductCategory extends Firefly {} // → 'product_categories' collection
-
-// Check your collection name
-const user = new User({ name: 'Test' });
-console.log(user.collection()); // 'users'
-```
-
-## 🎨 Real-World Examples
-
-### E-commerce Store 🛍️
-
-```javascript
-class Product extends Firefly {}
-class Order extends Firefly {}
-class Customer extends Firefly {}
-
-// Create products
-const laptop = await Product.create({
-  name: 'MacBook Pro',
-  price: 2399.99,
-  category: 'Computers',
-  inStock: true,
-  tags: ['laptop', 'apple', 'professional']
-});
-
-// Find products
-const computers = await Product.filter({ category: 'Computers' });
-const inStockItems = await Product.filter({ inStock: true });
-const expensiveItems = await Product.where('price', '>', 1000);
-
-// Create an order
-const order = await Order.create({
-  customerId: 'cust_123',
-  items: [
-    { productId: laptop.id, quantity: 1, price: laptop.price }
-  ],
-  total: laptop.price,
-  status: 'pending'
-});
-
-console.log('🛒 Order created successfully!');
-```
-
-### Blog System 📚
-
-```javascript
-class Author extends Firefly {}
+class User extends Firefly {}
 class Post extends Firefly {}
 class Comment extends Firefly {}
 
-// Create author
-const author = await Author.create({
-  name: 'Jane Doe',
-  email: 'jane@blog.com',
-  bio: 'Tech writer and developer'
+// Create a user
+const author = await User.create({
+  name: "Jane Doe",
+  email: "jane@example.com"
 });
 
-// Create post
+// Create a post
 const post = await Post.create({
-  title: 'Getting Started with Firefly',
-  content: 'Firefly makes Firebase development a breeze...',
-  authorId: author.id,
-  tags: ['firebase', 'javascript', 'tutorial'],
-  status: 'published'
+  title: "Getting Started with Firefly",
+  content: "Firefly makes Firebase Firestore feel like ActiveRecord...",
+  author_id: author.id,
+  published: true
 });
 
-// Find posts by author
-const authorPosts = await Post.filter({ authorId: author.id });
-const publishedPosts = await Post.filter({ status: 'published' });
+// Add comments
+await Comment.create({
+  post_id: post.id,
+  author: "Reader",
+  content: "Great article!",
+  approved: true
+});
 
-// Recent posts
-const recentPosts = await Post.orderBy('created_at', 'desc', 10);
+// Query published posts
+const publishedPosts = await Post.filter({ published: true });
 
-console.log(`📖 Found ${recentPosts.length} recent posts`);
+// Find post with comments
+const postWithComments = await Post.get(post.id);
+const comments = await Comment.filter({ post_id: post.id, approved: true });
 ```
 
-## 🧪 Testing Your Setup
+## 🧪 Testing
 
-Run the included tests to verify everything works:
+Run the test suite:
 
 ```bash
 npm test
 ```
 
-## 🔧 Advanced Configuration
+The test suite includes examples of all CRUD operations and query methods.
 
-### Custom Firebase Config
+## 📄 License
 
-```javascript
-// lib/custom-db.js
-const admin = require('firebase-admin');
-const { DB } = require('firefly/lib/db');
+ISC License - see the [LICENSE](LICENSE) file for details.
 
-// Custom initialization
-const customConfig = {
-  credential: admin.credential.cert(require('./path-to-service-account.json')),
-  databaseURL: 'https://your-project.firebaseio.com'
-};
+## 🤝 Contributing
 
-admin.initializeApp(customConfig);
-```
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
+## 🐛 Issues & Support
 
-## 🎉 You're All Set!
-
-Firefly gives you the power of Firebase Firestore with the simplicity of Active Record. Start building amazing applications with clean, readable code that just works! 
-
-## 📜 License
-
-MIT © [Rob Conery]
-
-## 🤝 Want to Help Out?
-
-Love contributions and issues! Have a look at [CONTRIBUTING](/CONTRIBUTING.md)!
+Found a bug or need help? [Open an issue](https://github.com/your-username/firefly/issues) on GitHub.
 
 ---
 
-Made with ❤️ and lots of ☕ by developers who believe database operations should be simple and elegant.
+Made with ❤️ for developers who love clean, simple APIs
